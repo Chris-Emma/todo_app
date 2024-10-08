@@ -14,3 +14,9 @@ SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 def init_db():
     Base.metadata.create_all(engine)
 
+def db_session():
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
