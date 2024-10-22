@@ -29,3 +29,11 @@ def index(request: Request):
 def getItems(session: Session =Depends(db_session)):
     item = session.query(Item).all()
     return Item
+
+@app.post("/todo/api")
+def addItem(item: ItemSchema, session: Session = Depends(db_session)):
+    todoitem = Item(task=item.task)
+    session.add(todoitem)
+    session.commit()
+    session.refresh(todoitem)
+    return todoitem
