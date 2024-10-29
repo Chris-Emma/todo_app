@@ -39,7 +39,24 @@ def addItem(item: ItemSchema, session: Session = Depends(db_session)):
     return todoitem
 
 @app.patch("/api/todo/{id}")
-def update_item(id: int, session: Session = Depends(db_session)):
+def update_item(id: int, item: ItemSchema, session: Session = Depends(db_session)):
+    todoitem = session.query(Item).get(id)
+    if todoitem:
+        todoitem.task = item.task
+        session.commit()
+        session.close()
+        response = json.dumps({"msg": "Item has been updated."})
+        return Response(
+            content=response, media_type='application/json', status_code=200
+        )
+    else:
+        response = json.dumps({"msg": "Item not found."})
+        return Response(
+            content=response, media_type='application/json', status_code=404
+        )
+    
+@app.delete("/api/todo/{id}")
+def delete_item(id: int, session: Session = Depends(db_session)):
     todoitem = session.query(Item).get(id)
     if todoitem:
         session.delete(todoitem)
@@ -50,7 +67,7 @@ def update_item(id: int, session: Session = Depends(db_session)):
             content=response, media_type='application/json', status_code=200
         )
     else:
-        response = json.dumps({"msg": "Item not found."})
+        response = json.dumps({"msg": "Item not found"})
         return Response(
-            content=response, media_type='application/json', status_code=404
+            content=response, media_type='application/json', status_code=400
         )
