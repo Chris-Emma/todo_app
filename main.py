@@ -30,7 +30,7 @@ def getItems(session: Session =Depends(db_session)):
     item = session.query(Item).all()
     return Item
 
-@app.post("/todo/api")
+@app.post("/api/todo")
 def addItem(item: ItemSchema, session: Session = Depends(db_session)):
     todoitem = Item(task=item.task)
     session.add(todoitem)
