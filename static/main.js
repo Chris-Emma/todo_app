@@ -26,3 +26,30 @@ let getToDoItems = () => {
         })
         .catch(console.error);
 }
+
+getToDoItems();
+
+let createTodoItem = (e) => {
+
+    e.preventDefault();
+    todoTask = document.getElementById('todoTask').value;
+    const data = { task: todoTask };
+
+    fetch('/api/todo', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            getToDoItems();
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+
+    //reset form
+    document.getElementById('todo-form').reset();
+}
