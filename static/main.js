@@ -53,3 +53,28 @@ let createTodoItem = (e) => {
     //reset form
     document.getElementById('todo-form').reset();
 }
+
+let updateTodoItem = (id) => {
+    let modalInput = document.getElementById('todo-text');
+    let updateTodoBtn = document.getElementById("update-todo")
+    let todoItem = document.getElementById(`item-${id}`).getAttribute('data-value');
+    modalInput.value = todoItem
+
+    updateTodoBtn.addEventListener('click', () => {
+        const data = { task: modalInput.value };
+        fetch(`/api/todo/${id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                getToDoItems();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    } , { once: true})
+}
