@@ -5,31 +5,43 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from database.configurations import init_db, db_session
-from database.models import Item
 from database.schema import ItemSchema
+from database.models import Item
 
-#configure app
+
+# configure fastapi
 app = FastAPI()
-
-#configuring static route
+# configure static route
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-#configuring templates
+# configure template
 templates = Jinja2Templates(directory="templates")
+
 
 @app.on_event("startup")
 def on_startup():
     init_db()
 
+
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(
+        "index.html", {"request": request}
+        )
 
+
+##########################
+# TODO APIs
+##########################
+
+# API get endpoint
 @app.get("/api/todo")
-def getItems(session: Session =Depends(db_session)):
-    item = session.query(Item).all()
-    return Item
+def getItems(session: Session = Depends(db_session)):
+    items = session.query(Item).all()
+    return items
 
+
+# API post endpoint
 @app.post("/api/todo")
 def addItem(item: ItemSchema, session: Session = Depends(db_session)):
     todoitem = Item(task=item.task)
@@ -38,8 +50,11 @@ def addItem(item: ItemSchema, session: Session = Depends(db_session)):
     session.refresh(todoitem)
     return todoitem
 
+
+# API patch endpoint
 @app.patch("/api/todo/{id}")
-def update_item(id: int, item: ItemSchema, session: Session = Depends(db_session)):
+def updateItem(id: int, item: ItemSchema,
+               session: Session = Depends(db_session)):
     todoitem = session.query(Item).get(id)
     if todoitem:
         todoitem.task = item.task
@@ -48,15 +63,17 @@ def update_item(id: int, item: ItemSchema, session: Session = Depends(db_session
         response = json.dumps({"msg": "Item has been updated."})
         return Response(
             content=response, media_type='application/json', status_code=200
-        )
+            )
     else:
-        response = json.dumps({"msg": "Item not found."})
+        response = json.dumps({"msg": "Item not found"})
         return Response(
             content=response, media_type='application/json', status_code=404
-        )
-    
+            )
+
+
+# API delete endpoint
 @app.delete("/api/todo/{id}")
-def delete_item(id: int, session: Session = Depends(db_session)):
+def deleteItem(id: int, session: Session = Depends(db_session)):
     todoitem = session.query(Item).get(id)
     if todoitem:
         session.delete(todoitem)
@@ -65,9 +82,9 @@ def delete_item(id: int, session: Session = Depends(db_session)):
         response = json.dumps({"msg": "Item has been deleted."})
         return Response(
             content=response, media_type='application/json', status_code=200
-        )
+            )
     else:
         response = json.dumps({"msg": "Item not found"})
         return Response(
-            content=response, media_type='application/json', status_code=400
-        )
+            content=response, media_type='application/json', status_code=404
+            )
